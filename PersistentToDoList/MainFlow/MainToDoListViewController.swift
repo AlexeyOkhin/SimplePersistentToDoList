@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 enum Section: CaseIterable {
     case notes
@@ -15,13 +16,12 @@ class MainToDoListViewController: UIViewController {
 
     //MARK: -  Private Properties
 
-
-
     private lazy var diffDataSource = DifDataSource(listTableView)
 
     private let fileManager = ToDoFileManager()
+    private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
-    private var testArray = [Note]()
+    private var testArray = [NoteModel]()
 
     private lazy var listTableView: UITableView = {
         let table = UITableView()
@@ -30,13 +30,16 @@ class MainToDoListViewController: UIViewController {
         return table
     }()
 
+
+
     //MARK: -  Life Cycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         settingNavBar()
         settingUI()
-        testArray = ToDoFileManager().readDataArray()
+
+        //testArray = ToDoFileManager().readDataArray()
         updateDataSource()
     }
 
@@ -70,18 +73,31 @@ class MainToDoListViewController: UIViewController {
         diffDataSource.apply(snapshot, animatingDifferences: true)
     }
 
+    private func saveData() {
+
+        do {
+            try context.save()
+        } catch {
+            print(error)
+        }
+
+        updateDataSource()
+    }
+
     @objc
     private func tapAddAction() {
         addNotesAlert()
     }
+
 }
 
-// MARK: - UITableViewDelegate
+// MARK: - UITableViewDiffableDataSource
 
-final class DifDataSource: UITableViewDiffableDataSource<Section, Note> {
+final class DifDataSource: UITableViewDiffableDataSource<Section, NoteModel> {
     init(_ tableView: UITableView) {
         super.init(tableView: tableView) { tableView, indexPath, note in
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+
             cell.accessoryType = note.done ? .checkmark : .none
             cell.textLabel?.text = note.title
             return cell
@@ -95,8 +111,7 @@ extension MainToDoListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
         testArray[indexPath.row].done.toggle()
-        fileManager.writeDataArray(dataArray: testArray)
-        updateDataSource()
+        saveData()
         tableView.deselectRow(at: indexPath, animated: true)
 
     }
@@ -117,12 +132,13 @@ extension MainToDoListViewController {
         }
 
         let actionButton = UIAlertAction(title: "Add note", style: .default) { [weak self] alert in
+            guard let self else { return }
             let title = textField.text ?? ""
-            let note = Note(title: title)
-
-            self?.testArray.append(note)
-            self?.fileManager.writeDataArray(dataArray: self?.testArray)
-            self?.updateDataSource()
+            let note = NoteModel(context: self.context)
+            note.done = false
+            note.title = title
+            self.testArray.append(note)
+            self.saveData()
         }
 
         alert.addAction(actionButton)

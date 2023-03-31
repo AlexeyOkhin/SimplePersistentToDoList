@@ -15,9 +15,13 @@ class MainToDoListViewController: UIViewController {
 
     //MARK: -  Private Properties
 
-    private var testArray = [Note(title: "f,shdfku"), Note(title: "asdasdqw"), Note(title: "asdasdqw")]
+
 
     private lazy var diffDataSource = DifDataSource(listTableView)
+
+    private let fileManager = ToDoFileManager()
+
+    private var testArray = [Note]()
 
     private lazy var listTableView: UITableView = {
         let table = UITableView()
@@ -32,6 +36,7 @@ class MainToDoListViewController: UIViewController {
         super.viewDidLoad()
         settingNavBar()
         settingUI()
+        testArray = ToDoFileManager().readDataArray()
         updateDataSource()
     }
 
@@ -90,6 +95,7 @@ extension MainToDoListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
         testArray[indexPath.row].done.toggle()
+        fileManager.writeDataArray(dataArray: testArray)
         updateDataSource()
         tableView.deselectRow(at: indexPath, animated: true)
 
@@ -113,7 +119,9 @@ extension MainToDoListViewController {
         let actionButton = UIAlertAction(title: "Add note", style: .default) { [weak self] alert in
             let title = textField.text ?? ""
             let note = Note(title: title)
+
             self?.testArray.append(note)
+            self?.fileManager.writeDataArray(dataArray: self?.testArray)
             self?.updateDataSource()
         }
 

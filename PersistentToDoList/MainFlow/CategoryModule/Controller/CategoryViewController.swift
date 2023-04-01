@@ -28,6 +28,7 @@ class CategoryViewController: UIViewController {
         let table = UITableView()
         table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         table.delegate = self
+
         return table
     }()
 
@@ -99,19 +100,50 @@ class CategoryViewController: UIViewController {
 // MARK: - UITableViewDiffableDataSource
 
 final private class DifDataSource: UITableViewDiffableDataSource<Section, CategoryModel> {
+
     init(_ tableView: UITableView) {
         super.init(tableView: tableView) { tableView, indexPath, category in
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-
+            let categoryColour = UIColor.random() 
+            cell.backgroundColor = categoryColour
+            cell.textLabel?.textColor = .white
             cell.textLabel?.text = category.name
             return cell
         }
     }
+
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+      return true
+    }
+
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        let realm = try! Realm()
+      if editingStyle == .delete {
+          do {
+
+              let model = realm.objects(CategoryModel.self)[indexPath.row]//.modelForIndexPath(indexPath)
+
+
+              var snapshot = self.snapshot()
+              snapshot.deleteItems([model])
+                  apply(snapshot)
+              try realm.write {
+                  realm.delete(model)
+              }
+              
+          } catch {
+              print(error)
+          }
+      }
+    }
+
+
 }
 
 //MARK: - UITableViewDelegate
 
 extension CategoryViewController: UITableViewDelegate {
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedCategory = testArray[indexPath.row]
         let notesVC = MainToDoListViewController()
@@ -119,6 +151,9 @@ extension CategoryViewController: UITableViewDelegate {
         navigationController?.pushViewController(notesVC, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
     }
+
+
+
 }
 
 //MARK: - Add alert
@@ -148,4 +183,3 @@ extension CategoryViewController {
         present(alert, animated: true)
     }
 }
-

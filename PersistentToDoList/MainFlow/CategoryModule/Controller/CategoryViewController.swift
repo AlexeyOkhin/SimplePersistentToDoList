@@ -1,18 +1,18 @@
 //
-//  MainToDoListViewController.swift
+//  CategoryViewController.swift
 //  PersistentToDoList
 //
-//  Created by Djinsolobzik on 24.03.2023.
+//  Created by Djinsolobzik on 01.04.2023.
 //
 
 import UIKit
 import CoreData
 
-enum Section: CaseIterable {
-    case notes
+private enum Section: CaseIterable {
+    case categories
 }
 
-class MainToDoListViewController: UIViewController {
+class CategoryViewController: UIViewController {
 
     //MARK: -  Private Properties
 
@@ -21,7 +21,9 @@ class MainToDoListViewController: UIViewController {
     private let fileManager = ToDoFileManager()
     private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
-    private var testArray = [NoteModel]()
+    private var testArray = [CategoryModel]()
+
+    private var resultSearchController = UISearchController()
 
     private lazy var listTableView: UITableView = {
         let table = UITableView()
@@ -30,22 +32,18 @@ class MainToDoListViewController: UIViewController {
         return table
     }()
 
-
-
     //MARK: -  Life Cycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         settingNavBar()
         settingUI()
-
-        //testArray = ToDoFileManager().readDataArray()
+        loadNotes()
         updateDataSource()
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-
         listTableView.frame = view.bounds
     }
 
@@ -53,7 +51,7 @@ class MainToDoListViewController: UIViewController {
 
     private func settingNavBar() {
 
-        title = "Notes"
+        title = "Categories"
 
         let rightBarButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(tapAddAction))
         navigationItem.rightBarButtonItem = rightBarButton
@@ -61,7 +59,6 @@ class MainToDoListViewController: UIViewController {
 
     private func settingUI() {
         view.addSubview(listTableView)
-
     }
 
     private func updateDataSource() {
@@ -73,33 +70,40 @@ class MainToDoListViewController: UIViewController {
         diffDataSource.apply(snapshot, animatingDifferences: true)
     }
 
+    private func loadNotes(with request: NSFetchRequest<CategoryModel> = CategoryModel.fetchRequest()) {
+        do {
+           testArray = try context.fetch(request)
+        } catch {
+            print(error)
+        }
+        updateDataSource()
+    }
+
     private func saveData() {
 
         do {
             try context.save()
+            updateDataSource()
         } catch {
             print(error)
         }
-
-        updateDataSource()
     }
 
     @objc
     private func tapAddAction() {
-        addNotesAlert()
+        addCategoryAlert()
     }
 
 }
 
 // MARK: - UITableViewDiffableDataSource
 
-final class DifDataSource: UITableViewDiffableDataSource<Section, NoteModel> {
+final private class DifDataSource: UITableViewDiffableDataSource<Section, CategoryModel> {
     init(_ tableView: UITableView) {
-        super.init(tableView: tableView) { tableView, indexPath, note in
+        super.init(tableView: tableView) { tableView, indexPath, category in
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
 
-            cell.accessoryType = note.done ? .checkmark : .none
-            cell.textLabel?.text = note.title
+            cell.textLabel?.text = category.name
             return cell
         }
     }
@@ -107,37 +111,36 @@ final class DifDataSource: UITableViewDiffableDataSource<Section, NoteModel> {
 
 //MARK: - UITableViewDelegate
 
-extension MainToDoListViewController: UITableViewDelegate {
+extension CategoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
-        testArray[indexPath.row].done.toggle()
-        saveData()
+        let selectedCategory = testArray[indexPath.row]
+        let notesVC = MainToDoListViewController()
+        notesVC.selectedCategory = selectedCategory
+        navigationController?.pushViewController(notesVC, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
-
     }
 }
 
 //MARK: - Add alert
 
-extension MainToDoListViewController {
-    private func addNotesAlert() {
+extension CategoryViewController {
+    private func addCategoryAlert() {
 
         var textField = UITextField()
 
-        let alert = UIAlertController(title: "Add Note", message: "", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Category", message: "", preferredStyle: .alert)
 
         alert.addTextField { alertTF in
             alertTF.placeholder = "Input here..."
             textField = alertTF
         }
 
-        let actionButton = UIAlertAction(title: "Add note", style: .default) { [weak self] alert in
+        let actionButton = UIAlertAction(title: "Add Category", style: .default) { [weak self] alert in
             guard let self else { return }
             let title = textField.text ?? ""
-            let note = NoteModel(context: self.context)
-            note.done = false
-            note.title = title
-            self.testArray.append(note)
+            let category = CategoryModel(context: self.context)
+            category.name = title
+            self.testArray.append(category)
             self.saveData()
         }
 
@@ -145,3 +148,4 @@ extension MainToDoListViewController {
         present(alert, animated: true)
     }
 }
+

@@ -19,6 +19,7 @@ extension NoteModel {
     @NSManaged public var done: Bool
     @NSManaged public var id: UUID?
     @NSManaged public var title: String?
+    @NSManaged public var parentCategory: CategoryModel?
 
 }
 

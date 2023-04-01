@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		0C29F1AA29D6F867006F6C42 /* ToDoFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C29F1A929D6F867006F6C42 /* ToDoFileManager.swift */; };
+		0C90372329D819CE0063D8D2 /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C90372229D819CE0063D8D2 /* CategoryViewController.swift */; };
+		0C90372629D8224D0063D8D2 /* CategoryModel+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C90372429D8224D0063D8D2 /* CategoryModel+CoreDataClass.swift */; };
+		0C90372729D8224D0063D8D2 /* CategoryModel+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C90372529D8224D0063D8D2 /* CategoryModel+CoreDataProperties.swift */; };
 		0CC511D729D743BF0040607D /* MyModelNote.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0CC511D529D743BF0040607D /* MyModelNote.xcdatamodeld */; };
 		0CC511DA29D749E30040607D /* NoteModel+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC511D829D749E30040607D /* NoteModel+CoreDataClass.swift */; };
 		0CC511DB29D749E30040607D /* NoteModel+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC511D929D749E30040607D /* NoteModel+CoreDataProperties.swift */; };
@@ -19,6 +22,9 @@
 
 /* Begin PBXFileReference section */
 		0C29F1A929D6F867006F6C42 /* ToDoFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoFileManager.swift; sourceTree = "<group>"; };
+		0C90372229D819CE0063D8D2 /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
+		0C90372429D8224D0063D8D2 /* CategoryModel+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CategoryModel+CoreDataClass.swift"; sourceTree = "<group>"; };
+		0C90372529D8224D0063D8D2 /* CategoryModel+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CategoryModel+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		0CC511D629D743BF0040607D /* MyModelNote.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MyModelNote.xcdatamodel; sourceTree = "<group>"; };
 		0CC511D829D749E30040607D /* NoteModel+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NoteModel+CoreDataClass.swift"; sourceTree = "<group>"; };
 		0CC511D929D749E30040607D /* NoteModel+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NoteModel+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -55,6 +61,59 @@
 				0C29F1A929D6F867006F6C42 /* ToDoFileManager.swift */,
 			);
 			path = FileManager;
+			sourceTree = "<group>";
+		};
+		0C90371E29D819820063D8D2 /* NoteModule */ = {
+			isa = PBXGroup;
+			children = (
+				0C90372029D819A10063D8D2 /* Controller */,
+				0C90371F29D819980063D8D2 /* Model */,
+			);
+			path = NoteModule;
+			sourceTree = "<group>";
+		};
+		0C90371F29D819980063D8D2 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				0CC511D829D749E30040607D /* NoteModel+CoreDataClass.swift */,
+				0CC511D929D749E30040607D /* NoteModel+CoreDataProperties.swift */,
+				0CC511D529D743BF0040607D /* MyModelNote.xcdatamodeld */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		0C90372029D819A10063D8D2 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				0CDB783329CDD6E4003DCB1B /* MainToDoListViewController.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
+		0C90372129D819B60063D8D2 /* CategoryModule */ = {
+			isa = PBXGroup;
+			children = (
+				0C90372929D824340063D8D2 /* Controller */,
+				0C90372829D8242F0063D8D2 /* Model */,
+			);
+			path = CategoryModule;
+			sourceTree = "<group>";
+		};
+		0C90372829D8242F0063D8D2 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				0C90372429D8224D0063D8D2 /* CategoryModel+CoreDataClass.swift */,
+				0C90372529D8224D0063D8D2 /* CategoryModel+CoreDataProperties.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		0C90372929D824340063D8D2 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				0C90372229D819CE0063D8D2 /* CategoryViewController.swift */,
+			);
+			path = Controller;
 			sourceTree = "<group>";
 		};
 		0CDB782329CDD6E4003DCB1B = {
@@ -105,10 +164,8 @@
 		0CDB784529CDD92B003DCB1B /* MainFlow */ = {
 			isa = PBXGroup;
 			children = (
-				0CDB783329CDD6E4003DCB1B /* MainToDoListViewController.swift */,
-				0CC511D829D749E30040607D /* NoteModel+CoreDataClass.swift */,
-				0CC511D929D749E30040607D /* NoteModel+CoreDataProperties.swift */,
-				0CC511D529D743BF0040607D /* MyModelNote.xcdatamodeld */,
+				0C90372129D819B60063D8D2 /* CategoryModule */,
+				0C90371E29D819820063D8D2 /* NoteModule */,
 			);
 			path = MainFlow;
 			sourceTree = "<group>";
@@ -185,8 +242,11 @@
 			files = (
 				0CDB783429CDD6E4003DCB1B /* MainToDoListViewController.swift in Sources */,
 				0CC511DB29D749E30040607D /* NoteModel+CoreDataProperties.swift in Sources */,
+				0C90372329D819CE0063D8D2 /* CategoryViewController.swift in Sources */,
 				0CC511D729D743BF0040607D /* MyModelNote.xcdatamodeld in Sources */,
+				0C90372729D8224D0063D8D2 /* CategoryModel+CoreDataProperties.swift in Sources */,
 				0CC511DA29D749E30040607D /* NoteModel+CoreDataClass.swift in Sources */,
+				0C90372629D8224D0063D8D2 /* CategoryModel+CoreDataClass.swift in Sources */,
 				0C29F1AA29D6F867006F6C42 /* ToDoFileManager.swift in Sources */,
 				0CDB783029CDD6E4003DCB1B /* AppDelegate.swift in Sources */,
 			);

@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
 
 
-        let mainVC = MainToDoListViewController()
+        let mainVC = CategoryViewController()
 
         let navigationController = UINavigationController(rootViewController: mainVC)
 

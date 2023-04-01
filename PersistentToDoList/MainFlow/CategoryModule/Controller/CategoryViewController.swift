@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 private enum Section: CaseIterable {
     case categories
@@ -16,14 +16,13 @@ class CategoryViewController: UIViewController {
 
     //MARK: -  Private Properties
 
+    private let realm = try! Realm()
+
     private lazy var diffDataSource = DifDataSource(listTableView)
 
     private let fileManager = ToDoFileManager()
-    private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     private var testArray = [CategoryModel]()
-
-    private var resultSearchController = UISearchController()
 
     private lazy var listTableView: UITableView = {
         let table = UITableView()
@@ -38,7 +37,9 @@ class CategoryViewController: UIViewController {
         super.viewDidLoad()
         settingNavBar()
         settingUI()
-        loadNotes()
+
+
+        loadCategories()
         updateDataSource()
     }
 
@@ -70,19 +71,18 @@ class CategoryViewController: UIViewController {
         diffDataSource.apply(snapshot, animatingDifferences: true)
     }
 
-    private func loadNotes(with request: NSFetchRequest<CategoryModel> = CategoryModel.fetchRequest()) {
-        do {
-           testArray = try context.fetch(request)
-        } catch {
-            print(error)
-        }
+    private func loadCategories() {
+
+        testArray = realm.objects(CategoryModel.self).map({$0})
         updateDataSource()
     }
 
-    private func saveData() {
+    private func save(category: CategoryModel) {
 
         do {
-            try context.save()
+            try realm.write{
+                realm.add(category)
+            }
             updateDataSource()
         } catch {
             print(error)
@@ -138,10 +138,10 @@ extension CategoryViewController {
         let actionButton = UIAlertAction(title: "Add Category", style: .default) { [weak self] alert in
             guard let self else { return }
             let title = textField.text ?? ""
-            let category = CategoryModel(context: self.context)
+            let category = CategoryModel()
             category.name = title
             self.testArray.append(category)
-            self.saveData()
+            self.save(category: category)
         }
 
         alert.addAction(actionButton)

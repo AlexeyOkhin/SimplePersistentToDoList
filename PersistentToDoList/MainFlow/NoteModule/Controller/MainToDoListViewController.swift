@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 private enum Section: CaseIterable {
     case notes
@@ -16,17 +16,19 @@ class MainToDoListViewController: UIViewController {
 
     //MARK: - Properties
 
-    var selectedCategory: CategoryModel?
+    var selectedCategory: CategoryModel? {
+        didSet {
+            loadNotes()
+        }
+    }
 
     //MARK: -  Private Properties
 
+    private let realm = try! Realm()
+
     private lazy var diffDataSource = DifDataSource(listTableView)
 
-    private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-
     private var testArray = [NoteModel]()
-
-
 
     private var resultSearchController = UISearchController()
 
@@ -36,8 +38,6 @@ class MainToDoListViewController: UIViewController {
         table.delegate = self
         return table
     }()
-
-
 
     //MARK: -  Life Cycle
 
@@ -94,28 +94,19 @@ class MainToDoListViewController: UIViewController {
         diffDataSource.apply(snapshot, animatingDifferences: true)
     }
 
-    private func loadNotes(with request: NSFetchRequest<NoteModel> = NoteModel.fetchRequest(), predicate: NSPredicate? = nil) {
+    private func loadNotes() {
+        let listArray = selectedCategory?.notes
 
-        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-
-        if let addPredicate = predicate {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, addPredicate])
-        } else {
-            request.predicate = categoryPredicate
-        }
-        
-        do {
-           testArray = try context.fetch(request)
-        } catch {
-            print(error)
-        }
+        testArray = Array(listArray!)
         updateDataSource()
     }
 
-    private func saveData() {
+    private func save(note: NoteModel) {
 
         do {
-            try context.save()
+            try realm.write({
+                realm.add(note)
+            })
             updateDataSource()
         } catch {
             print(error)
@@ -147,9 +138,16 @@ final private class DifDataSource: UITableViewDiffableDataSource<Section, NoteMo
 
 extension MainToDoListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let note = testArray[indexPath.row]
 
-        testArray[indexPath.row].done.toggle()
-        saveData()
+        do {
+            try realm.write({
+                note.done.toggle()
+            })
+        } catch {
+            print(error)
+        }
+
         tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
 
@@ -173,18 +171,27 @@ extension MainToDoListViewController {
         let actionButton = UIAlertAction(title: "Add note", style: .default) { [weak self] alert in
             guard let self else { return }
             let title = textField.text ?? ""
-            let note = NoteModel(context: self.context)
-            note.done = false
-            note.title = title
-            note.parentCategory = self.selectedCategory
-            self.testArray.append(note)
-            self.saveData()
+            if let currentCategory = self.selectedCategory {
+                do {
+                    try self.realm.write({
+                        let note = NoteModel()
+                        note.title = title
+                        note.dateCreate = Date()
+                        currentCategory.notes.append(note)
+                        self.testArray.append(note)
+                    })
+                } catch {
+                    print(error)
+                }
+            }
+            self.updateDataSource()
         }
-
         alert.addAction(actionButton)
         present(alert, animated: true)
     }
+    
 }
+
 
 
 //MARK: - add UISearchResultsUpdating
@@ -192,15 +199,13 @@ extension MainToDoListViewController {
 extension MainToDoListViewController:  UISearchBarDelegate {
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        let request: NSFetchRequest<NoteModel> = NoteModel.fetchRequest()
-        let predicat = NSPredicate(format: "title CONTAINS [cd] %@", searchBar.text!)
-        request.predicate = predicat
+        let filteredArray = selectedCategory?.notes.filter("title CONTAINS [cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreate", ascending: true)
+       
+        testArray = Array(filteredArray!)
+        updateDataSource()
 
-        let descriptor = NSSortDescriptor(key: "title", ascending: true)
-        request.sortDescriptors = [descriptor]
-
-        loadNotes(with: request, predicate: predicat)
     }
+
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {
             loadNotes()

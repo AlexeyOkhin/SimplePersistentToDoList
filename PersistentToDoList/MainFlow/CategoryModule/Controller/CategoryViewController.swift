@@ -94,7 +94,6 @@ class CategoryViewController: UIViewController {
     private func tapAddAction() {
         addCategoryAlert()
     }
-
 }
 
 // MARK: - UITableViewDiffableDataSource
@@ -120,24 +119,18 @@ final private class DifDataSource: UITableViewDiffableDataSource<Section, Catego
         let realm = try! Realm()
       if editingStyle == .delete {
           do {
-
-              let model = realm.objects(CategoryModel.self)[indexPath.row]//.modelForIndexPath(indexPath)
-
-
+              let model = realm.objects(CategoryModel.self)[indexPath.row]
               var snapshot = self.snapshot()
               snapshot.deleteItems([model])
                   apply(snapshot)
               try realm.write {
                   realm.delete(model)
               }
-              
           } catch {
               print(error)
           }
       }
     }
-
-
 }
 
 //MARK: - UITableViewDelegate
@@ -151,9 +144,6 @@ extension CategoryViewController: UITableViewDelegate {
         navigationController?.pushViewController(notesVC, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
     }
-
-
-
 }
 
 //MARK: - Add alert

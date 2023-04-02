@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 private enum Section: CaseIterable {
     case categories
@@ -16,19 +16,19 @@ class CategoryViewController: UIViewController {
 
     //MARK: -  Private Properties
 
+    private let realm = try! Realm()
+
     private lazy var diffDataSource = DifDataSource(listTableView)
 
     private let fileManager = ToDoFileManager()
-    private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     private var testArray = [CategoryModel]()
-
-    private var resultSearchController = UISearchController()
 
     private lazy var listTableView: UITableView = {
         let table = UITableView()
         table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         table.delegate = self
+
         return table
     }()
 
@@ -38,7 +38,9 @@ class CategoryViewController: UIViewController {
         super.viewDidLoad()
         settingNavBar()
         settingUI()
-        loadNotes()
+
+
+        loadCategories()
         updateDataSource()
     }
 
@@ -70,19 +72,18 @@ class CategoryViewController: UIViewController {
         diffDataSource.apply(snapshot, animatingDifferences: true)
     }
 
-    private func loadNotes(with request: NSFetchRequest<CategoryModel> = CategoryModel.fetchRequest()) {
-        do {
-           testArray = try context.fetch(request)
-        } catch {
-            print(error)
-        }
+    private func loadCategories() {
+
+        testArray = realm.objects(CategoryModel.self).map({$0})
         updateDataSource()
     }
 
-    private func saveData() {
+    private func save(category: CategoryModel) {
 
         do {
-            try context.save()
+            try realm.write{
+                realm.add(category)
+            }
             updateDataSource()
         } catch {
             print(error)
@@ -93,25 +94,49 @@ class CategoryViewController: UIViewController {
     private func tapAddAction() {
         addCategoryAlert()
     }
-
 }
 
 // MARK: - UITableViewDiffableDataSource
 
 final private class DifDataSource: UITableViewDiffableDataSource<Section, CategoryModel> {
+
     init(_ tableView: UITableView) {
         super.init(tableView: tableView) { tableView, indexPath, category in
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-
+            let categoryColour = UIColor.random() 
+            cell.backgroundColor = categoryColour
+            cell.textLabel?.textColor = .white
             cell.textLabel?.text = category.name
             return cell
         }
+    }
+
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+      return true
+    }
+
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        let realm = try! Realm()
+      if editingStyle == .delete {
+          do {
+              let model = realm.objects(CategoryModel.self)[indexPath.row]
+              var snapshot = self.snapshot()
+              snapshot.deleteItems([model])
+                  apply(snapshot)
+              try realm.write {
+                  realm.delete(model)
+              }
+          } catch {
+              print(error)
+          }
+      }
     }
 }
 
 //MARK: - UITableViewDelegate
 
 extension CategoryViewController: UITableViewDelegate {
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedCategory = testArray[indexPath.row]
         let notesVC = MainToDoListViewController()
@@ -138,14 +163,13 @@ extension CategoryViewController {
         let actionButton = UIAlertAction(title: "Add Category", style: .default) { [weak self] alert in
             guard let self else { return }
             let title = textField.text ?? ""
-            let category = CategoryModel(context: self.context)
+            let category = CategoryModel()
             category.name = title
             self.testArray.append(category)
-            self.saveData()
+            self.save(category: category)
         }
 
         alert.addAction(actionButton)
         present(alert, animated: true)
     }
 }
-

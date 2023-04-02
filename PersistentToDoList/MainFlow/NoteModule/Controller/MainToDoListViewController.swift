@@ -117,7 +117,6 @@ class MainToDoListViewController: UIViewController {
     private func tapAddAction() {
         addNotesAlert()
     }
-
 }
 
 // MARK: - UITableViewDiffableDataSource
@@ -191,8 +190,6 @@ extension MainToDoListViewController {
     }
     
 }
-
-
 
 //MARK: - add UISearchResultsUpdating
 
